@@ -62,7 +62,7 @@ stages:
 
     # Upload everything in dist (including subfolders) to the build artifacts for later use or debugging
     - task: PublishPipelineArtifact@0
-      displayName: Publish artifacts
+      displayName: Create artifacts
       inputs:
         artifactName: $(package)
         targetPath: dist
@@ -81,7 +81,7 @@ stages:
 
   jobs:
 
-  - job: PublishJob
+  - job: PublishPipelineArtifactsJob
 
     pool:
       vmImage: ubuntu-latest
@@ -124,7 +124,9 @@ stages:
 
   # If all Build steps for all Python versions have succeeded,
   # we will download one of the already-validated build assets and package it into a container image
-  - job: Docker
+  - job: PublishDockerJob
+
+    dependsOn: PublishPipelineArtifactsJob
 
     pool:
       vmImage: ubuntu-latest
