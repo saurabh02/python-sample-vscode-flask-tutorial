@@ -3,6 +3,12 @@
 # Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 
+# Pipeline-level variables
+variables:
+  package: hello_app
+  distDirectory: dist
+  testsDirectory: tests
+
 trigger:
 - master
 - releases/*
@@ -45,4 +51,17 @@ stages:
     # Run tests
     - bash: pytest --cov=.
       displayName: 'Run tests'
+      workingDirectory: $(testsDirectory)
 
+    # Our built source dist & wheel will land in src/simple_package/dist
+    - bash: python setup.py sdist bdist_wheel
+      displayName: Build package
+      workingDirectory: $(srcDirectory)
+
+    # Upload everything in src/simple_package/dist (including subfolders) to the build artifacts for later use or debugging
+    # Add pythonVersion to the artifact name to avoid conflicts and ensure we capture all build output
+    - task: PublishPipelineArtifact@0
+      displayName: Publish artifacts
+      inputs:
+        artifactName: dist$(pythonVersion)
+        targetPath: $(srcDirectory)/dist
