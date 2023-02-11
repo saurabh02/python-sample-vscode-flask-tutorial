@@ -100,7 +100,7 @@ stages:
       vmImage: ubuntu-latest
 
     # We want to wait for all Build Jobs to complete before running the Publish Job
-    dependsOn: Build
+    dependsOn: BuildJob
 
     # Only publish when the previous Jobs are successful and we're building the master branch
     condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))
