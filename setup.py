@@ -1,3 +1,7 @@
+"""
+hello_app: module docstring goes here
+"""
+
 import setuptools
 
 setuptools.setup(
