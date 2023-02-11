@@ -71,7 +71,7 @@ stages:
   dependsOn: Build
 
   # Only publish when the previous Jobs are successful and we're building the master branch
-  condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))
+  # condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))
 
   # Variables specific to the Publish stage
   variables:
