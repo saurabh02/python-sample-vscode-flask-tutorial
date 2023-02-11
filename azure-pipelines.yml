@@ -8,32 +8,41 @@ trigger:
 - releases/*
 - develop
 
-pool:
-  vmImage: ubuntu-latest
+stages:
 
-steps:
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '3.x'
-    disableDownloadFromRegistry: true # boolean. Disable downloading releases from the GitHub registry. Default: false.
-    #allowUnstable: false # boolean. Optional. Use when disableDownloadFromRegistry = false. Allow downloading unstable releases. Default: false.
-    #githubToken: # string. Optional. Use when disableDownloadFromRegistry = false. GitHub token for GitHub Actions python registry. 
-    addToPath: true # boolean. Required. Add to PATH. Default: true.
-  # Advanced
-    architecture: 'x64' # 'x86' | 'x64'. Required. Architecture. Default: x64.
-  displayName: 'Use Python 3.x'
+- stage: Build
 
-# Install some tools needed for build
-- script: |
-    python -m pip install --upgrade pip
-    pip install -r requirements.txt
-  displayName: 'Install dependencies'
+  jobs:
 
-# Lint via pylint. We need to find all .py files and run pylint to avoid errors
-- bash: find . -type f -name "*.py" | xargs pylint
-  displayName: "Linting"
+  - job: BuildJob
 
-# Run tests
-- bash: pytest --cov=.
-  displayName: 'Run tests'
+    pool:
+      vmImage: ubuntu-latest
+
+    steps:
+
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.x'
+        disableDownloadFromRegistry: true # boolean. Disable downloading releases from the GitHub registry. Default: false.
+        #allowUnstable: false # boolean. Optional. Use when disableDownloadFromRegistry = false. Allow downloading unstable releases. Default: false.
+        #githubToken: # string. Optional. Use when disableDownloadFromRegistry = false. GitHub token for GitHub Actions python registry. 
+        addToPath: true # boolean. Required. Add to PATH. Default: true.
+      # Advanced
+        architecture: 'x64' # 'x86' | 'x64'. Required. Architecture. Default: x64.
+      displayName: 'Use Python 3.x'
+
+    # Install some tools needed for build
+    - script: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+      displayName: 'Install dependencies'
+
+    # Lint via pylint. We need to find all .py files and run pylint to avoid errors
+    - bash: find . -type f -name "*.py" | xargs pylint
+      displayName: "Linting"
+
+    # Run tests
+    - bash: pytest --cov=.
+      displayName: 'Run tests'
 
