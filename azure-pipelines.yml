@@ -8,6 +8,7 @@ variables:
   package: hello_app
   distDirectory: dist
   testsDirectory: tests
+  artifactFeed: artifacts
 
 trigger:
 - master
@@ -72,6 +73,10 @@ stages:
   # Only publish when the previous Jobs are successful and we're building the master branch
   condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))
 
+  # Variables specific to the Publish stage
+  variables:
+    artifactName: $(package)
+
   jobs:
 
   - job: PublishPrep
@@ -109,4 +114,16 @@ stages:
     
     # Download from build artifacts
     - download: current
-      artifact: $(package)
+      artifact: $(artifactName)
+
+    # Authenticate to Azure Artifacts
+    # This sets the PYPIRC_PATH environment variable, which contains credentials for the feed
+    - task: TwineAuthenticate@0
+      displayName: Configure twine authentication
+      inputs:
+        artifactFeeds: $(artifactFeed)
+
+    # Upload everything in the dist folder to the private Artifacts feed 
+    - bash: twine upload -r $(artifactFeed) --config-file $(PYPIRC_PATH) $(Pipeline.Workspace)/$(artifactName)/*
+      displayName: Publish artifacts
+
