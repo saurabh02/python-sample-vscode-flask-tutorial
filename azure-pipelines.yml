@@ -23,12 +23,17 @@ steps:
     architecture: 'x64' # 'x86' | 'x64'. Required. Architecture. Default: x64.
   displayName: 'Use Python 3.x'
 
+# Install some tools needed for build
 - script: |
     python -m pip install --upgrade pip
     pip install -r requirements.txt
   displayName: 'Install dependencies'
 
-- script: |
-    pip install pytest pytest-azurepipelines
-    pytest
-  displayName: 'pytest'
+# Lint via pylint. We need to find all .py files and run pylint to avoid errors
+- bash: find . -type f -name "*.py" | xargs pylint
+  displayName: "Linting"
+
+# Run tests
+- bash: pytest --cov=.
+  displayName: 'Run tests'
+
