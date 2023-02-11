@@ -8,7 +8,9 @@ variables:
   package: hello_app
   distDirectory: dist
   testsDirectory: tests
-  artifactFeed: artifacts
+  artifactFeed: HivePipelineDemo/artifacts
+  registryName: azsamples.azurecr.io
+  imageName: hello_app
 
 trigger:
 - master
@@ -104,13 +106,6 @@ stages:
     # Install tools needed for publishing
     - bash: python -m pip install twine
       displayName: Install twine
-
-  # - job: PublishJob
-
-  #   pool:
-  #     vmImage: ubuntu-latest
-
-  #   steps:
     
     # Download from build artifacts
     - download: current
@@ -127,3 +122,39 @@ stages:
     - bash: twine upload -r $(artifactFeed) --config-file $(PYPIRC_PATH) $(Pipeline.Workspace)/$(artifactName)/*
       displayName: Publish artifacts
 
+  # If all Build steps for all Python versions have succeeded,
+  # we will download one of the already-validated build assets and package it into a container image
+  - job: Docker
+
+    pool:
+      vmImage: ubuntu-latest
+
+    steps:
+
+    # Download from build artifacts using the long-form task to control the download path
+    # We want the pre-validated package to land at $(Build.SourcesDirectory)/src/simple_server/dist to be available for Docker
+    - task: DownloadPipelineArtifact@2
+      displayName: Download application
+      inputs:
+        artifact: $(artifactName)
+        path: $(Build.SourcesDirectory)/dist
+
+    # Authenticate to Azure Artifacts
+    # This makes the PIP_EXTRA_INDEX_URL Azure DevOps variable / environment var available in future steps
+    - task: PipAuthenticate@0
+      displayName: Authenticate with artifact feed
+      inputs:
+        artifactFeeds: $(artifactFeed)
+
+    # Build a container image, passing in the PIP_EXTRA_INDEX_URL from the PipAuthenticate task
+    - bash: |
+        docker build \
+          --build-arg 'PIP_EXTRA_INDEX_URL=$(PIP_EXTRA_INDEX_URL)' \
+          -t $(registryName)/$(imageName):$(Build.BuildNumber) \
+          .
+      displayName: Build container image
+      workingDirectory: $(srcDirectory)
+    # Only tag `latest` when the previous Steps are successful and we're building the master branch
+    - bash: docker tag $(registryName)/$(imageName):$(Build.BuildNumber) $(registryName)/$(imageName):latest
+      displayName: Tag `latest` image
+      # condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))
