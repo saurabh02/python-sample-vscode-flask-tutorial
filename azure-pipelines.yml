@@ -9,16 +9,18 @@ trigger:
 
 pool:
   vmImage: ubuntu-latest
-strategy:
-  matrix:
-    Python37:
-      python.version: '3.7'
 
 steps:
 - task: UsePythonVersion@0
   inputs:
-    versionSpec: '$(python.version)'
-  displayName: 'Use Python $(python.version)'
+    versionSpec: '3.x'
+    disableDownloadFromRegistry: true # boolean. Disable downloading releases from the GitHub registry. Default: false.
+    #allowUnstable: false # boolean. Optional. Use when disableDownloadFromRegistry = false. Allow downloading unstable releases. Default: false.
+    #githubToken: # string. Optional. Use when disableDownloadFromRegistry = false. GitHub token for GitHub Actions python registry. 
+    addToPath: true # boolean. Required. Add to PATH. Default: true.
+  # Advanced
+    architecture: 'x64' # 'x86' | 'x64'. Required. Architecture. Default: x64.
+  displayName: 'Use Python 3.x'
 
 - script: |
     python -m pip install --upgrade pip
