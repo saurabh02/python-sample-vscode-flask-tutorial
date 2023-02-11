@@ -1,2 +1,8 @@
+"""
+hello_app: module docstring goes here
+"""
 def test_mock():
-  assert True
+    """
+    Function docstring goes here
+    """
+    assert True
