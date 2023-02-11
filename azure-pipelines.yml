@@ -79,7 +79,7 @@ stages:
 
   jobs:
 
-  - job: PublishPrep
+  - job: PublishJob
 
     pool:
       vmImage: ubuntu-latest
@@ -105,12 +105,12 @@ stages:
     - bash: python -m pip install twine
       displayName: Install twine
 
-  - job: PublishJob
+  # - job: PublishJob
 
-    pool:
-      vmImage: ubuntu-latest
+  #   pool:
+  #     vmImage: ubuntu-latest
 
-    steps:
+  #   steps:
     
     # Download from build artifacts
     - download: current
