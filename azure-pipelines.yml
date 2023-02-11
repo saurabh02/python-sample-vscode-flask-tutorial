@@ -105,6 +105,8 @@ stages:
     # Only publish when the previous Jobs are successful and we're building the master branch
     condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))
 
+    steps:
+    
     # Download from build artifacts
     - download: current
       artifact: $(package)
