@@ -56,7 +56,6 @@ stages:
     # Our built source dist & wheel will land in dist
     - bash: python setup.py sdist bdist_wheel
       displayName: Build package
-      workingDirectory: $(distDirectory)
 
     # Upload everything in dist (including subfolders) to the build artifacts for later use or debugging
     - task: PublishPipelineArtifact@0
