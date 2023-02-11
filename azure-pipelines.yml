@@ -68,6 +68,32 @@ stages:
 
   jobs:
 
+  - job: PublishPrep
+
+    pool:
+      vmImage: ubuntu-latest
+
+    steps:
+
+    # Explicitly disable source checkout to keep a pristine environment for publishing
+    - checkout: none
+
+    # Set the version of Python to use for publishing (which may or may not match the version the package was built with or tested against)
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.x'
+        disableDownloadFromRegistry: true # boolean. Disable downloading releases from the GitHub registry. Default: false.
+        #allowUnstable: false # boolean. Optional. Use when disableDownloadFromRegistry = false. Allow downloading unstable releases. Default: false.
+        #githubToken: # string. Optional. Use when disableDownloadFromRegistry = false. GitHub token for GitHub Actions python registry. 
+        addToPath: true # boolean. Required. Add to PATH. Default: true.
+      # Advanced
+        architecture: 'x64' # 'x86' | 'x64'. Required. Architecture. Default: x64.
+      displayName: 'Use Python 3.x'
+
+    # Install tools needed for publishing
+    - bash: python -m pip install twine
+      displayName: Install twine
+
   - job: PublishJob
 
     pool:
@@ -79,7 +105,6 @@ stages:
     # Only publish when the previous Jobs are successful and we're building the master branch
     condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/master'))
 
-    steps:
-
-    # Explicitly disable source checkout to keep a pristine environment for publishing
-    - checkout: none
+    # Download from build artifacts
+    - download: current
+      artifact: $(package)
