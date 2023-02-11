@@ -53,15 +53,14 @@ stages:
       displayName: 'Run tests'
       workingDirectory: $(testsDirectory)
 
-    # Our built source dist & wheel will land in src/simple_package/dist
+    # Our built source dist & wheel will land in dist
     - bash: python setup.py sdist bdist_wheel
       displayName: Build package
-      workingDirectory: $(srcDirectory)
+      workingDirectory: $(distDirectory)
 
-    # Upload everything in src/simple_package/dist (including subfolders) to the build artifacts for later use or debugging
-    # Add pythonVersion to the artifact name to avoid conflicts and ensure we capture all build output
+    # Upload everything in dist (including subfolders) to the build artifacts for later use or debugging
     - task: PublishPipelineArtifact@0
       displayName: Publish artifacts
       inputs:
-        artifactName: dist$(pythonVersion)
-        targetPath: $(srcDirectory)/dist
+        artifactName: $(package)
+        targetPath: dist
